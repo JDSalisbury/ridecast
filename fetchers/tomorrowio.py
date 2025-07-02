@@ -1,10 +1,12 @@
-# tomorrowio weather fetcher
 # fetchers/tomorrowio.py
 import requests
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from fetchers.base import WeatherFetcher
 from config import TOMORROW_API_KEY
 from utils import ForecastResult
+
+LOCAL_TZ = ZoneInfo("America/New_York")
 
 
 class TomorrowIO(WeatherFetcher):
@@ -25,27 +27,32 @@ class TomorrowIO(WeatherFetcher):
             data = response.json()
 
             timelines = data.get("timelines", {}).get("hourly", [])
-            now = datetime.now().astimezone(timezone.utc)
-            local_today = now.date()
+            now = datetime.now(LOCAL_TZ)
 
             for forecast in timelines:
-                dt = datetime.fromisoformat(
+                dt_utc = datetime.fromisoformat(
                     forecast["time"].replace("Z", "+00:00"))
-                if dt.date() == local_today and hour_range[0] <= dt.hour <= hour_range[1]:
-                    precip_prob = forecast.get("values", {}).get(
-                        "precipitationProbability", 0.0)
-                    precip_intensity = forecast.get("values", {}).get(
+                dt_local = dt_utc.astimezone(LOCAL_TZ)
+
+                if hour_range[0] <= dt_local.hour <= hour_range[1] and dt_local >= now:
+                    values = forecast.get("values", {})
+                    precip_prob = values.get("precipitationProbability", 0.0)
+                    precip_intensity = values.get(
                         "precipitationIntensity", 0.0)
 
                     return ForecastResult(
                         rain=precip_prob >= 30 or precip_intensity > 0.0,
                         chance_of_rain=precip_prob,
                         precip_mm=precip_intensity,
-                        wind_kph=forecast["values"].get("windSpeed", 0.0),
-                        temp_c=forecast["values"].get("temperature", 0.0),
+                        wind_kph=values.get("windSpeed", 0.0),
+                        temp_c=values.get("temperature", 0.0),
                         source="tomorrowio"
                     )
 
         except Exception as e:
             print(f"[TomorrowIO] Error: {e}")
+            print(f"[TomorrowIO] Response status: {response.status_code}")
+
+        print(
+            f"[TomorrowIO] No matching forecast found for {lat}, {lon} in range {hour_range}")
         return None
