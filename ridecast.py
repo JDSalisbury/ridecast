@@ -7,7 +7,7 @@ from utils import ForecastResult
 from config import *
 
 # Time window for ride in (4–7 PM)
-RIDE_IN_HOURS = (15, 17)
+RIDE_IN_HOURS = (8, 10)
 LOCATIONS = {
     "Home": (39.94954786783218, -82.93728710268415),
     "Work": (40.14374280043774, -82.99466818733278),
@@ -43,9 +43,9 @@ def print_summary(forecasts):
 
     for loc_name, result in forecasts:
         rain_status = "🌧️ RAIN" if result.rain else "☀️ Clear"
-        print(f"[{result.source.upper()}] {loc_name}: {rain_status} | "
-              f"{result.chance_of_rain:.0f}% rain | {result.temp_c:.1f}°C | "
-              f"{result.wind_kph:.1f} kph wind")
+        print(f"[{result.source.upper():.<15}] {loc_name}: {rain_status.upper():.<10} | "
+              f"{result.chance_of_rain:02.0f}% rain | {result.temp_c:.1f}°C | "
+              f"{result.wind_kph:04.1f} kph wind")
 
         if result.rain:
             bad_conditions += 1
