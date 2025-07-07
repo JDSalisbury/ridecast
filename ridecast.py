@@ -3,11 +3,9 @@ from fetchers.openweather import OpenWeather
 from fetchers.weatherapi import WeatherAPI
 from fetchers.tomorrowio import TomorrowIO
 from fetchers.noaa import NOAA
-from utils import ForecastResult
+from utils import ForecastResult, temp_to_fahrenheit
 from config import *
 
-# Time window for ride in (4–7 PM)
-RIDE_IN_HOURS = (8, 10)
 LOCATIONS = {
     "Home": (39.94954786783218, -82.93728710268415),
     "Work": (40.14374280043774, -82.99466818733278),
@@ -27,24 +25,24 @@ def get_all_forecasts(hour_range):
     results = []
     for loc_name, (lat, lon) in LOCATIONS.items():
         for fetcher in FETCHERS:
-            print(f"Fetching {loc_name} from {fetcher.__class__.__name__}...")
+            # print(f"Fetching {loc_name} from {fetcher.__class__.__name__}...")
             result = fetcher.get_forecast(lat, lon, hour_range)
             if result:
-                print(
-                    f"Got forecast from {fetcher.__class__.__name__} for {loc_name}: {result}")
+                # print(
+                #     f"Got forecast from {fetcher.__class__.__name__} for {loc_name}: {result}")
                 results.append((loc_name, result))
     return results
 
 
-def print_summary(forecasts):
-    print("\n===== RideCast Forecast =====\n")
+def print_summary(forecasts, label=None):
+    print(f"\n===== RideCast Forecast: {label} =====\n")
     bad_conditions = 0
     early_exit_warnings = 0
 
     for loc_name, result in forecasts:
         rain_status = "🌧️ RAIN" if result.rain else "☀️ Clear"
         print(f"[{result.source.upper():.<15}] {loc_name}: {rain_status.upper():.<10} | "
-              f"{result.chance_of_rain:02.0f}% rain | {result.temp_c:.1f}°C | "
+              f"{result.chance_of_rain:03.0f}% rain | {temp_to_fahrenheit(result.temp_c):.1f}°F | "
               f"{result.wind_kph:04.1f} kph wind")
 
         if result.rain:
@@ -59,5 +57,10 @@ def print_summary(forecasts):
 
 
 if __name__ == "__main__":
+    from config import RIDE_IN_HOURS, RIDE_BACK_HOURS
+
     forecasts = get_all_forecasts(RIDE_IN_HOURS)
-    print_summary(forecasts)
+    print_summary(forecasts, label="Morning")
+
+    forecasts = get_all_forecasts(RIDE_BACK_HOURS)
+    print_summary(forecasts, label="Evening")
