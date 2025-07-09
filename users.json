@@ -1,0 +1,15 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "NAME": "Jeff Salisbury",
+            "EMAIL": "salisbury.jeffery@gmail.com",
+            "RIDE_IN_HOURS": "(7,9)",
+            "RIDE_BACK_HOURS": "(17,19)",
+            "LOCATIONS": {
+                "Home": "(39.94954786783218, -82.93728710268415)",
+                "Work": "(40.14374280043774, -82.99466818733278)"
+            }
+        }
+    ]
+}
