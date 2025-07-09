@@ -1,17 +1,14 @@
 # ridecast.py
+
+import json
+from ast import literal_eval
 from fetchers.openweather import OpenWeather
 from fetchers.weatherapi import WeatherAPI
 from fetchers.tomorrowio import TomorrowIO
 from fetchers.noaa import NOAA
-from utils import ForecastResult, temp_to_fahrenheit
-from config import *
-
-LOCATIONS = {
-    "Home": (39.94954786783218, -82.93728710268415),
-    "Work": (40.14374280043774, -82.99466818733278),
-    # "Checkpoint A": (40.04412439067341, -82.99702680589385),
-    # "Checkpoint B": (40.07469880963292, -82.98800230120533),
-}
+from utils import ForecastResult, temp_to_fahrenheit, military_to_standard, kph_to_mph
+from pathlib import Path
+from evaluator import evaluate_ride
 
 FETCHERS = [
     OpenWeather(),
@@ -21,46 +18,65 @@ FETCHERS = [
 ]
 
 
-def get_all_forecasts(hour_range):
+def parse_user_data(file_path="users.json"):
+    """Load and parse user data from a JSON file."""
+    with open(file_path, "r") as f:
+        raw_data = json.load(f)
+
+    parsed_users = []
+    for user in raw_data["users"]:
+        parsed_user = {
+            "id": user["id"],
+            "name": user["NAME"],
+            "email": user["EMAIL"],
+            "ride_in_hours": literal_eval(user["RIDE_IN_HOURS"]),
+            "ride_back_hours": literal_eval(user["RIDE_BACK_HOURS"]),
+            "locations": {k: literal_eval(v) for k, v in user["LOCATIONS"].items()},
+        }
+        parsed_users.append(parsed_user)
+
+    return parsed_users
+
+
+def get_all_forecasts(locations: dict, hour_range: tuple) -> list[tuple[str, ForecastResult]]:
+    """Run all fetchers for each location during the specified hour range."""
     results = []
-    for loc_name, (lat, lon) in LOCATIONS.items():
+    for loc_name, (lat, lon) in locations.items():
         for fetcher in FETCHERS:
-            # print(f"Fetching {loc_name} from {fetcher.__class__.__name__}...")
             result = fetcher.get_forecast(lat, lon, hour_range)
             if result:
-                # print(
-                #     f"Got forecast from {fetcher.__class__.__name__} for {loc_name}: {result}")
                 results.append((loc_name, result))
     return results
 
 
-def print_summary(forecasts, label=None):
-    print(f"\n===== RideCast Forecast: {label} =====\n")
-    bad_conditions = 0
-    early_exit_warnings = 0
+def print_summary(user: dict, forecasts: list, label: str):
+    print(f"\n===== RideCast Forecast for {user['name']} ({label}) =====\n")
+    if label == "Morning":
+        print(
+            f"Forcast for riding in between {military_to_standard(user['ride_in_hours'][0])}:00 and {military_to_standard(user['ride_in_hours'][1])}:00")
+    elif label == "Evening":
+        print(
+            f"Forcast for riding in between {military_to_standard(user['ride_back_hours'][0])}:00 and {military_to_standard(user['ride_back_hours'][1])}:00")
 
     for loc_name, result in forecasts:
         rain_status = "🌧️ RAIN" if result.rain else "☀️ Clear"
         print(f"[{result.source.upper():.<15}] {loc_name}: {rain_status.upper():.<10} | "
               f"{result.chance_of_rain:03.0f}% rain | {temp_to_fahrenheit(result.temp_c):.1f}°F | "
-              f"{result.wind_kph:04.1f} kph wind")
+              f"{kph_to_mph(result.wind_kph):04.1f} mph wind")
 
-        if result.rain:
-            bad_conditions += 1
-
-    if bad_conditions == 0:
-        print("\n✅ All clear – Good to ride in!")
-    elif bad_conditions <= 2:
-        print("\n⚠️ Some rain detected – Ride only if planning early return.")
-    else:
-        print("\n❌ Too risky – Better not to ride today.")
+    chat_evaluation = evaluate_ride(forecasts, label, user)
+    print(f"\nChatGPT Evaluation:\n{chat_evaluation}\n")
 
 
 if __name__ == "__main__":
-    from config import RIDE_IN_HOURS, RIDE_BACK_HOURS
+    users = parse_user_data()
 
-    forecasts = get_all_forecasts(RIDE_IN_HOURS)
-    print_summary(forecasts, label="Morning")
+    for user in users:
+        # Morning commute
+        forecasts = get_all_forecasts(user["locations"], user["ride_in_hours"])
+        print_summary(user, forecasts, label="Morning")
 
-    forecasts = get_all_forecasts(RIDE_BACK_HOURS)
-    print_summary(forecasts, label="Evening")
+        # Evening commute
+        forecasts = get_all_forecasts(
+            user["locations"], user["ride_back_hours"])
+        print_summary(user, forecasts, label="Evening")
