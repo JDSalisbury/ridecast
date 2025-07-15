@@ -2,11 +2,11 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
-RIDE_IN_HOURS = (7, 9)
-# Time window for ride back (4–7 PM)
-RIDE_BACK_HOURS = (16, 18)
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
+EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_FROM = os.getenv("EMAIL_FROM")
 
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
