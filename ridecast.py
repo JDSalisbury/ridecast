@@ -20,6 +20,9 @@ FETCHERS = [
 
 def parse_user_data(file_path="users.json"):
     """Load and parse user data from a JSON file."""
+    script_dir = Path(__file__).resolve().parent
+    file_path = script_dir / file_path
+
     with open(file_path, "r") as f:
         raw_data = json.load(f)
 
@@ -31,7 +34,6 @@ def parse_user_data(file_path="users.json"):
             "email": user["EMAIL"],
             "ride_in_hours": literal_eval(user["RIDE_IN_HOURS"]),
             "ride_back_hours": literal_eval(user["RIDE_BACK_HOURS"]),
-            "locations": {k: literal_eval(v) for k, v in user["LOCATIONS"].items()},
         }
         parsed_users.append(parsed_user)
 
