@@ -9,7 +9,7 @@ from fetchers.noaa import NOAA
 from utils import ForecastResult, temp_to_fahrenheit, military_to_standard, kph_to_mph
 from pathlib import Path
 from evaluator import evaluate_ride
-
+from emailer import send_email
 FETCHERS = [
     OpenWeather(),
     WeatherAPI(),
@@ -49,34 +49,49 @@ def get_all_forecasts(locations: dict, hour_range: tuple) -> list[tuple[str, For
     return results
 
 
-def print_summary(user: dict, forecasts: list, label: str):
-    print(f"\n===== RideCast Forecast for {user['name']} ({label}) =====\n")
+def print_summary(user: dict, forecasts: list, label: str) -> str:
+    lines = [f"\n===== RideCast Forecast for {user['name']} ({label}) =====\n"]
     if label == "Morning":
-        print(
+        lines.append(
             f"Forcast for riding in between {military_to_standard(user['ride_in_hours'][0])}:00 and {military_to_standard(user['ride_in_hours'][1])}:00")
     elif label == "Evening":
-        print(
+        lines.append(
             f"Forcast for riding in between {military_to_standard(user['ride_back_hours'][0])}:00 and {military_to_standard(user['ride_back_hours'][1])}:00")
 
     for loc_name, result in forecasts:
         rain_status = "🌧️ RAIN" if result.rain else "☀️ Clear"
-        print(f"[{result.source.upper():.<15}] {loc_name}: {rain_status.upper():.<10} | "
-              f"{result.chance_of_rain:03.0f}% rain | {temp_to_fahrenheit(result.temp_c):.1f}°F | "
-              f"{kph_to_mph(result.wind_kph):04.1f} mph wind")
+        lines.append(f"[{result.source.upper():.<15}] {loc_name}: {rain_status.upper():.<10} | "
+                     f"{result.chance_of_rain:03.0f}% rain | {temp_to_fahrenheit(result.temp_c):.1f}°F | "
+                     f"{kph_to_mph(result.wind_kph):04.1f} mph wind")
 
     chat_evaluation = evaluate_ride(forecasts, label, user)
-    print(f"\nChatGPT Evaluation:\n{chat_evaluation}\n")
+    lines.append(f"\nChatGPT Evaluation:\n{chat_evaluation}\n")
+    print("\n".join(lines))
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
     users = parse_user_data()
 
     for user in users:
+        print(f"\n=== Running RideCast for {user['name']} ===")
+
+        full_report = []
+
         # Morning commute
-        forecasts = get_all_forecasts(user["locations"], user["ride_in_hours"])
-        print_summary(user, forecasts, label="Morning")
+        forecasts_morning = get_all_forecasts(
+            user["locations"], user["ride_in_hours"])
+        summary_morning = print_summary(
+            user, forecasts_morning, label="Morning")
+        full_report.append(summary_morning)
 
         # Evening commute
-        forecasts = get_all_forecasts(
+        forecasts_evening = get_all_forecasts(
             user["locations"], user["ride_back_hours"])
-        print_summary(user, forecasts, label="Evening")
+        summary_evening = print_summary(
+            user, forecasts_evening, label="Evening")
+        full_report.append(summary_evening)
+
+        # Email the full report
+        subject = f"🏍️ RideCast Forecast for {user['name'].split()[0]}"
+        send_email(user["email"], subject, "\n\n".join(full_report))  # ✅ NEW
