@@ -34,6 +34,8 @@ def parse_user_data(file_path="users.json"):
             "email": user["EMAIL"],
             "ride_in_hours": literal_eval(user["RIDE_IN_HOURS"]),
             "ride_back_hours": literal_eval(user["RIDE_BACK_HOURS"]),
+            "locations": {k: literal_eval(v) for k, v in user["LOCATIONS"].items()},
+
         }
         parsed_users.append(parsed_user)
 

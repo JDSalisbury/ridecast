@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(dotenv_path=Path(__file__).resolve().parent / "config" / ".env")
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
 EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
