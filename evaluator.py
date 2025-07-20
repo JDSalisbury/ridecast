@@ -64,6 +64,7 @@ def evaluate_ride_full_day(full_report: list[str], rider: dict) -> str:
         f"\n"
         f"Be excitied to help the user make a safe decision, and know that the user wants to ride in comfort and safety.\n"
         f"Be concise and consider rain, temperature, and wind.\n"
+        f"Given it's a full day report, consider both morning and evening forecasts, if its raining in the evening, don't suggest riding in.\n"
         f"\n"
         f"{' '.join(full_report)}\n\n"
         f"Respond with a clear recommendation for the rider. Keep it chill though."
