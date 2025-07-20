@@ -8,7 +8,8 @@ from fetchers.tomorrowio import TomorrowIO
 from fetchers.noaa import NOAA
 from utils import ForecastResult, temp_to_fahrenheit, military_to_standard, kph_to_mph
 from pathlib import Path
-from evaluator import evaluate_ride
+from evaluator import evaluate_ride, evaluate_ride_full_day
+
 from emailer import send_email
 FETCHERS = [
     OpenWeather(),
@@ -47,6 +48,7 @@ def get_all_forecasts(locations: dict, hour_range: tuple) -> list[tuple[str, For
     results = []
     for loc_name, (lat, lon) in locations.items():
         for fetcher in FETCHERS:
+            print(f"[FETCH] Fetching {loc_name} from {fetcher.source}...")
             result = fetcher.get_forecast(lat, lon, hour_range)
             if result:
                 results.append((loc_name, result))
@@ -96,6 +98,11 @@ if __name__ == "__main__":
             user, forecasts_evening, label="Evening")
         full_report.append(summary_evening)
 
+        chat_evaluation = evaluate_ride_full_day(full_report, user)
+
         # Email the full report
         subject = f"🏍️ RideCast Forecast for {user['name'].split()[0]}"
-        send_email(user["email"], subject, "\n\n".join(full_report))  # ✅ NEW
+        # send_email(user["email"], subject,
+        #            "\n\n".join(chat_evaluation))  # ✅ NEW
+        send_email(user["email"], subject,
+                   chat_evaluation)

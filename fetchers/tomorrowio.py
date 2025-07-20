@@ -10,6 +10,7 @@ LOCAL_TZ = ZoneInfo("America/New_York")
 
 
 class TomorrowIO(WeatherFetcher):
+    source = "tomorrowio"
     BASE_URL = "https://api.tomorrow.io/v4/weather/forecast"
 
     def get_forecast(self, lat: float, lon: float, hour_range=(8, 9)) -> ForecastResult | None:

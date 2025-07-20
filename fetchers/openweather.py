@@ -10,6 +10,7 @@ LOCAL_TZ = ZoneInfo("America/New_York")
 
 
 class OpenWeather(WeatherFetcher):
+    source = "openweather"
     API_KEY = OPENWEATHER_API_KEY
     BASE_URL = "https://api.openweathermap.org/data/2.5/forecast"
 

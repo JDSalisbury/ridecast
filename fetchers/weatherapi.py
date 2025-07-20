@@ -6,6 +6,7 @@ from utils import ForecastResult  # or forecast_types if you separated it
 
 
 class WeatherAPI(WeatherFetcher):
+    source = "weatherapi"
     BASE_URL = "https://api.weatherapi.com/v1/forecast.json"
 
     def get_forecast(self, lat: float, lon: float, hour_range=(8, 9)) -> ForecastResult | None:

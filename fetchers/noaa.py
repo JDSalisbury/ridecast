@@ -10,6 +10,7 @@ LOCAL_TZ = ZoneInfo("America/New_York")
 
 
 class NOAA(WeatherFetcher):
+    source = "noaa"
     USER_AGENT = NOAA_API_KEY  # Stored in .env as contact info
     BASE_POINT_URL = "https://api.weather.gov/points/{lat},{lon}"
     HEADERS = {"User-Agent": USER_AGENT}

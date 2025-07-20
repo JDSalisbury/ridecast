@@ -18,6 +18,21 @@ def forecast_summary(forecasts: list[tuple[str, ForecastResult]], label: str) ->
     return "\n".join(lines)
 
 
+def call_openai(prompt: str) -> str:
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a motorcycle commuting assistant who prioritizes safety."},
+                {"role": "user",
+                 "content": prompt}
+            ],
+            temperature=0.5)
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"[OpenAI Error] {e}"
+
+
 def evaluate_ride(forecasts: list[tuple[str, ForecastResult]], label: str, rider: dict) -> str:
     summary = forecast_summary(forecasts, label)
     prompt = (
@@ -35,15 +50,23 @@ def evaluate_ride(forecasts: list[tuple[str, ForecastResult]], label: str, rider
         f"Respond with a clear recommendation for the rider. Keep it chill though."
     )
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a motorcycle commuting assistant who prioritizes safety."},
-                {"role": "user",
-                 "content": prompt}
-            ],
-            temperature=0.5)
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"[OpenAI Error] {e}"
+    return call_openai(prompt)
+
+
+def evaluate_ride_full_day(full_report: list[str], rider: dict) -> str:
+    prompt = (
+        f"Given the following full day motorcycle commute weather forecasts, should the user ride or not?\n"
+        f"Here is some information about the rider:\n"
+        f"Name: {rider['name']}\n"
+        f"Email: {rider['email']}\n"
+        f"Preferred Riding Hours: {military_to_standard(rider['ride_in_hours'][0])}:00 - {military_to_standard(rider['ride_in_hours'][1])}:00\n"
+        f"Locations: {', '.join(rider['locations'].keys())}\n"
+        f"\n"
+        f"Be excitied to help the user make a safe decision, and know that the user wants to ride in comfort and safety.\n"
+        f"Be concise and consider rain, temperature, and wind.\n"
+        f"\n"
+        f"{' '.join(full_report)}\n\n"
+        f"Respond with a clear recommendation for the rider. Keep it chill though."
+    )
+
+    return call_openai(prompt)
