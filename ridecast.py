@@ -102,7 +102,5 @@ if __name__ == "__main__":
 
         # Email the full report
         subject = f"🏍️ RideCast Forecast for {user['name'].split()[0]}"
-        # send_email(user["email"], subject,
-        #            "\n\n".join(chat_evaluation))  # ✅ NEW
         send_email(user["email"], subject,
                    chat_evaluation)

@@ -67,7 +67,7 @@ def evaluate_ride_full_day(full_report: list[str], rider: dict) -> str:
         f"Given it's a full day report, consider both morning and evening forecasts, if its raining in the evening, don't suggest riding in.\n"
         f"\n"
         f"{' '.join(full_report)}\n\n"
-        f"Respond with a clear recommendation for the rider. Keep it chill though."
+        f"Respond with a clear recommendation for the rider. Keep it chill though. Could you add a fun motorcycle fact at the end of your response. Make sure the fact is actually true?"
     )
 
     return call_openai(prompt)
