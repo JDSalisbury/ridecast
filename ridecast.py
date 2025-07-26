@@ -2,6 +2,7 @@
 
 import json
 from ast import literal_eval
+from datetime import datetime
 from fetchers.openweather import OpenWeather
 from fetchers.weatherapi import WeatherAPI
 from fetchers.tomorrowio import TomorrowIO
@@ -76,7 +77,16 @@ def print_summary(user: dict, forecasts: list, label: str) -> str:
     return "\n".join(lines)
 
 
+def is_weekend():
+    current_utc_time = datetime.now(datetime.timezone.utc)
+    return current_utc_time.weekday() >= 5
+
+
 if __name__ == "__main__":
+
+    if is_weekend():
+        exit(0)
+
     users = parse_user_data()
 
     for user in users:
