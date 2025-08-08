@@ -9,7 +9,7 @@ from fetchers.tomorrowio import TomorrowIO
 from fetchers.noaa import NOAA
 from utils import ForecastResult, temp_to_fahrenheit, military_to_standard, kph_to_mph
 from pathlib import Path
-from evaluator import evaluate_ride, evaluate_ride_full_day
+from evaluator import evaluate_ride, evaluate_ride_full_day, evaluate_ride_full_day2
 
 from emailer import send_email
 FETCHERS = [
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             user, forecasts_evening, label="Evening")
         full_report.append(summary_evening)
 
-        chat_evaluation = evaluate_ride_full_day(full_report, user)
+        chat_evaluation = evaluate_ride_full_day2(full_report, user)
 
         # Email the full report
         subject = f"🏍️ RideCast Forecast for {user['name'].split()[0]}"

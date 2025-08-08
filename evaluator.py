@@ -71,3 +71,28 @@ def evaluate_ride_full_day(full_report: list[str], rider: dict) -> str:
     )
 
     return call_openai(prompt)
+
+
+def evaluate_ride_full_day2(full_report: list[str], rider: dict) -> str:
+    prompt = (
+        f"Given the following full day motorcycle commute weather forecasts, should the user ride or not?\n"
+        f"Here is some information about the rider:\n"
+        f"Name: {rider['name']}\n"
+        f"Email: {rider['email']}\n"
+        f"Preferred Riding Hours: {military_to_standard(rider['ride_in_hours'][0])}:00 - {military_to_standard(rider['ride_in_hours'][1])}:00\n"
+        f"Locations: {', '.join(rider['locations'].keys())}\n"
+        f"\n"
+        f"The user wants to ride in comfort and safety. Be concise and consider rain, temperature, and wind.\n"
+        f"Since it's a full day report, factor in both morning and evening forecasts. If it's raining in the evening, do not suggest riding in the morning.\n"
+        f"\n"
+        f"{' '.join(full_report)}\n\n"
+        f"Respond ONLY with a JSON object in the following format (do not include any explanation or extra text):\n"
+        f'{{\n'
+        f'  "temp": "<Temperature in Fahrenheit>",\n'
+        f'  "should_ride": true or false,\n'
+        f'  "summary": "<a friendly summary recommendation on the weather throughout the day on your route>",\n'
+        f'  "fun_fact": "<a true, fun motorcycle fact>"\n'
+        f'}}'
+    )
+
+    return call_openai(prompt)
