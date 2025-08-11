@@ -83,8 +83,9 @@ def is_weekend():
 
 
 if __name__ == "__main__":
-
+    print("=== Starting RideCast ===")
     if is_weekend():
+        print("RideCast is not available on weekends. Exiting.")
         exit(0)
 
     users = parse_user_data()
@@ -110,7 +111,22 @@ if __name__ == "__main__":
 
         chat_evaluation = evaluate_ride_full_day2(full_report, user)
 
-        # Email the full report
-        subject = f"🏍️ RideCast Forecast for {user['name'].split()[0]}"
-        send_email(user["email"], subject,
-                   chat_evaluation)
+        # Parse the JSON response
+        try:
+            print(f"[EMAIL] Sending RideCast to {user['email']}...")
+            eval_data = json.loads(chat_evaluation)
+            ride_emoji = "✅" if eval_data.get("should_ride", False) else "❌"
+            temp = eval_data.get("temp", "N/A")
+
+            # Email subject with ride recommendation and weather
+            subject = f"🏍️ {ride_emoji} RideCast for {user['name'].split()[0]} - {temp}°F"
+
+            # Email body with summary and fun fact
+            email_body = f"{eval_data.get('summary', '')}\n\n🏍️ Fun Fact: {eval_data.get('fun_fact', '')}"
+
+            send_email(user["email"], subject, email_body)
+        except json.JSONDecodeError:
+
+            # Fallback to original behavior if JSON parsing fails
+            subject = f"🏍️ RideCast Forecast for {user['name'].split()[0]}"
+            send_email(user["email"], subject, chat_evaluation)

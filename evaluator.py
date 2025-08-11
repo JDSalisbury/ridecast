@@ -91,7 +91,7 @@ def evaluate_ride_full_day2(full_report: list[str], rider: dict) -> str:
         f'  "temp": "<Temperature in Fahrenheit>",\n'
         f'  "should_ride": true or false,\n'
         f'  "summary": "<a friendly summary recommendation on the weather throughout the day on your route>",\n'
-        f'  "fun_fact": "<a true, fun motorcycle fact>"\n'
+        f'  "fun_fact": "<a true, fun motorcycle fact/or motorcycle tips that can help the user ride safely and more efficiently>"\n'
         f'}}'
     )
 
