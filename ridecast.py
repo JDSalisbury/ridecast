@@ -68,24 +68,69 @@ def get_all_forecasts(locations: Dict[str, Tuple[float, float]], hour_range: Tup
 
 
 def print_summary(user: Dict[str, Any], forecasts: List[Tuple[str, ForecastResult]], label: str) -> str:
+    # Get target hours for this summary
+    target_hours = user['ride_in_hours'] if label == "Morning" else user['ride_back_hours']
+    
     lines = [f"\n===== RideCast Forecast for {user['name']} ({label}) =====\n"]
-    if label == "Morning":
-        lines.append(
-            f"Forecast for riding in between {military_to_standard(user['ride_in_hours'][0])}:00 and {military_to_standard(user['ride_in_hours'][1])}:00")
-    elif label == "Evening":
-        lines.append(
-            f"Forecast for riding in between {military_to_standard(user['ride_back_hours'][0])}:00 and {military_to_standard(user['ride_back_hours'][1])}:00")
+    lines.append(
+        f"Target riding time: {military_to_standard(target_hours[0])}:00 - {military_to_standard(target_hours[1])}:00")
+    lines.append("")
 
-    for loc_name, result in forecasts:
-        rain_status = "🌧️ RAIN" if result.rain else "☀️ Clear"
-        lines.append(f"[{result.source.upper():.<15}] {loc_name}: {rain_status.upper():.<10} | "
-                     f"{result.chance_of_rain:03.0f}% rain | {temp_to_fahrenheit(result.temp_c):.1f}°F | "
-                     f"{kph_to_mph(result.wind_kph):04.1f} mph wind")
+    # Track API success/failure
+    
+    # Check which APIs should have been called
+    from fetchers.openweather import OpenWeather
+    from fetchers.weatherapi import WeatherAPI  
+    from fetchers.tomorrowio import TomorrowIO
+    from fetchers.noaa import NOAA
+    
+    all_sources = {f.source for f in [OpenWeather(), WeatherAPI(), TomorrowIO(), NOAA()]}
+    successful_sources = {result.source for _, result in forecasts}
+    failed_sources = all_sources - successful_sources
+
+    if forecasts:
+        lines.append("📊 WEATHER DATA SOURCES:")
+        for loc_name, result in forecasts:
+            rain_status = "🌧️ RAIN" if result.rain else "☀️ Clear"
+            
+            # Format forecast time info
+            forecast_time = result.forecast_datetime.strftime("%b %d, %I:%M %p")
+            time_info = f"@ {forecast_time}"
+            
+            # Add fallback info if used
+            if result.used_fallback:
+                fallback_sign = "+" if result.fallback_offset_hours > 0 else ""
+                time_info += f" (fallback: {fallback_sign}{result.fallback_offset_hours}h)"
+            
+            lines.append(
+                f"[{result.source.upper():.<15}] {loc_name}: {rain_status:.<15} | "
+                f"{result.chance_of_rain:03.0f}% rain | {temp_to_fahrenheit(result.temp_c):.1f}°F | "
+                f"{kph_to_mph(result.wind_kph):04.1f} mph | {time_info}"
+            )
+        
+    
+    # Show API status summary
+    lines.append("")
+    if successful_sources:
+        lines.append(f"✅ APIs successful: {', '.join(sorted(successful_sources))}")
+    if failed_sources:
+        lines.append(f"❌ APIs failed: {', '.join(sorted(failed_sources))}")
+    
+    if not forecasts:
+        lines.append("⚠️  No forecast data available from any API")
+        lines.append(f"❌ All APIs failed: {', '.join(sorted(all_sources))}")
+        
+        # Return early for failed case
+        summary = "\n".join(lines)
+        logger.info(summary)
+        return summary
 
     chat_evaluation = evaluate_ride(forecasts, label, user)
-    lines.append(f"\nChatGPT Evaluation:\n{chat_evaluation}\n")
-    logger.info("\n".join(lines))
-    return "\n".join(lines)
+    lines.append(f"\n🤖 AI Evaluation:\n{chat_evaluation}\n")
+    
+    summary = "\n".join(lines)
+    logger.info(summary)
+    return summary
 
 
 def is_weekend() -> bool:

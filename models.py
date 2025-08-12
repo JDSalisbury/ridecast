@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from datetime import datetime
+from typing import Dict, List, Tuple, Optional
 
 
 @dataclass
@@ -10,6 +11,9 @@ class ForecastResult:
     wind_kph: float
     temp_c: float
     source: str
+    forecast_datetime: datetime  # The actual date/time this forecast represents
+    used_fallback: bool = False  # Whether fallback logic was used to find this forecast
+    fallback_offset_hours: Optional[int] = None  # How many hours off from target time
 
 
 @dataclass
