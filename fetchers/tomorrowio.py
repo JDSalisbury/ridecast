@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from fetchers.base import WeatherFetcher
 from config import TOMORROW_API_KEY
-from utils import ForecastResult
+from models import ForecastResult
+from logger import logger
 
 LOCAL_TZ = ZoneInfo("America/New_York")
 
@@ -51,9 +52,10 @@ class TomorrowIO(WeatherFetcher):
                     )
 
         except Exception as e:
-            print(f"[TomorrowIO] Error: {e}")
-            print(f"[TomorrowIO] Response status: {response.status_code}")
+            logger.error(f"TomorrowIO API error: {e}")
+            if 'response' in locals():
+                logger.error(f"TomorrowIO response status: {response.status_code}")
 
-        print(
-            f"[TomorrowIO] No matching forecast found for {lat}, {lon} in range {hour_range}")
+        logger.warning(
+            f"TomorrowIO: No matching forecast found for {lat}, {lon} in range {hour_range}")
         return None

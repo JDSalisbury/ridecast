@@ -3,8 +3,9 @@ import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from fetchers.base import WeatherFetcher
-from utils import ForecastResult
+from models import ForecastResult
 from config import NOAA_API_KEY
+from logger import logger
 
 LOCAL_TZ = ZoneInfo("America/New_York")
 
@@ -51,8 +52,8 @@ class NOAA(WeatherFetcher):
                     )
 
         except Exception as e:
-            print(f"[NOAA] Error: {e}")
+            logger.error(f"NOAA API error: {e}")
 
-        print(
-            f"[NOAA] No matching forecast found for {lat}, {lon} in range {hour_range}")
+        logger.warning(
+            f"NOAA: No matching forecast found for {lat}, {lon} in range {hour_range}")
         return None

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
 
 @dataclass
@@ -11,6 +12,17 @@ class ForecastResult:
     source: str
 
 
+@dataclass
+class User:
+    id: int
+    name: str
+    email: str
+    ride_in_hours: Tuple[int, int]
+    ride_back_hours: Tuple[int, int]
+    locations: Dict[str, Tuple[float, float]]
+
+
+# Utility functions for temperature and time conversion
 def temp_to_fahrenheit(temp_c: float) -> float:
     """Convert Celsius to Fahrenheit."""
     return (temp_c * 9/5) + 32

@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from fetchers.base import WeatherFetcher
 from config import OPENWEATHER_API_KEY
-from utils import ForecastResult
+from models import ForecastResult
+from logger import logger
 
 LOCAL_TZ = ZoneInfo("America/New_York")
 
@@ -47,9 +48,10 @@ class OpenWeather(WeatherFetcher):
                     )
 
         except Exception as e:
-            print(f"[OpenWeather] Error: {e}")
-            print(f"[OpenWeather] Response status: {response.status_code}")
+            logger.error(f"OpenWeather API error: {e}")
+            if 'response' in locals():
+                logger.error(f"OpenWeather response status: {response.status_code}")
 
-        print(
-            f"[OpenWeather] No matching forecast found for {lat}, {lon} in range {hour_range}")
+        logger.warning(
+            f"OpenWeather: No matching forecast found for {lat}, {lon} in range {hour_range}")
         return None

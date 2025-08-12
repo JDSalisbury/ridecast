@@ -1,12 +1,13 @@
-# aggrigate data and evalute if one should ride in.
-from utils import ForecastResult, temp_to_fahrenheit, military_to_standard
-import os
+# Aggregate data and evaluate if one should ride in.
+from typing import List, Tuple, Dict, Any
+from models import ForecastResult, temp_to_fahrenheit, military_to_standard
 from openai import OpenAI
 from config import OPEN_API_KEY
+from logger import logger
 client = OpenAI(api_key=OPEN_API_KEY)
 
 
-def forecast_summary(forecasts: list[tuple[str, ForecastResult]], label: str) -> str:
+def forecast_summary(forecasts: List[Tuple[str, ForecastResult]], label: str) -> str:
     lines = [f"{label} Forecast:"]
     for loc_name, result in forecasts:
         rain_status = "Rain" if result.rain else "Clear"
@@ -30,10 +31,11 @@ def call_openai(prompt: str) -> str:
             temperature=0.5)
         return response.choices[0].message.content.strip()
     except Exception as e:
+        logger.error(f"OpenAI API error: {e}")
         return f"[OpenAI Error] {e}"
 
 
-def evaluate_ride(forecasts: list[tuple[str, ForecastResult]], label: str, rider: dict) -> str:
+def evaluate_ride(forecasts: List[Tuple[str, ForecastResult]], label: str, rider: Dict[str, Any]) -> str:
     summary = forecast_summary(forecasts, label)
     prompt = (
         f"Given the following motorcycle commute weather forecasts for {label}, should the user ride or not?\n"
@@ -53,27 +55,9 @@ def evaluate_ride(forecasts: list[tuple[str, ForecastResult]], label: str, rider
     return call_openai(prompt)
 
 
-def evaluate_ride_full_day(full_report: list[str], rider: dict) -> str:
-    prompt = (
-        f"Given the following full day motorcycle commute weather forecasts, should the user ride or not?\n"
-        f"Here is some information about the rider:\n"
-        f"Name: {rider['name']}\n"
-        f"Email: {rider['email']}\n"
-        f"Preferred Riding Hours: {military_to_standard(rider['ride_in_hours'][0])}:00 - {military_to_standard(rider['ride_in_hours'][1])}:00\n"
-        f"Locations: {', '.join(rider['locations'].keys())}\n"
-        f"\n"
-        f"Be excitied to help the user make a safe decision, and know that the user wants to ride in comfort and safety.\n"
-        f"Be concise and consider rain, temperature, and wind.\n"
-        f"Given it's a full day report, consider both morning and evening forecasts, if its raining in the evening, don't suggest riding in.\n"
-        f"\n"
-        f"{' '.join(full_report)}\n\n"
-        f"Respond with a clear recommendation for the rider. Keep it chill though. Could you add a fun motorcycle fact at the end of your response. Make sure the fact is actually true?"
-    )
-
-    return call_openai(prompt)
 
 
-def evaluate_ride_full_day2(full_report: list[str], rider: dict) -> str:
+def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> str:
     prompt = (
         f"Given the following full day motorcycle commute weather forecasts, should the user ride or not?\n"
         f"Here is some information about the rider:\n"

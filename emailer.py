@@ -3,22 +3,16 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from config import EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_FROM
+from logger import logger
 
 
-def send_email(to_address: str, subject: str, body: str) -> bool:
+def send_email(to_address: str, subject: str, html_body: str) -> bool:
     try:
         msg = MIMEMultipart()
         msg["From"] = EMAIL_FROM
         msg["To"] = to_address
         msg["Subject"] = subject
 
-        html_body = f"""
-            <html>
-                <body>
-                    <pre style="font-family: monospace; font-size: 14px;">{body}</pre>
-                </body>
-            </html>
-        """
         part = MIMEText(html_body, "html")
         msg.attach(part)
 
@@ -27,9 +21,9 @@ def send_email(to_address: str, subject: str, body: str) -> bool:
             server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
             server.send_message(msg)
 
-        print(f"[EMAIL] Sent to {to_address}")
+        logger.info(f"Email sent to {to_address}")
         return True
 
     except Exception as e:
-        print(f"[EMAIL] Error sending to {to_address}: {e}")
+        logger.error(f"Error sending email to {to_address}: {e}")
         return False

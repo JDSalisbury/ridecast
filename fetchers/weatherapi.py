@@ -2,7 +2,8 @@ import requests
 from datetime import datetime
 from fetchers.base import WeatherFetcher
 from config import WEATHER_API_KEY
-from utils import ForecastResult  # or forecast_types if you separated it
+from models import ForecastResult
+from logger import logger
 
 
 class WeatherAPI(WeatherFetcher):
@@ -43,5 +44,5 @@ class WeatherAPI(WeatherFetcher):
                     )
 
         except Exception as e:
-            print(f"[WeatherAPI] Error: {e}")
+            logger.error(f"WeatherAPI error: {e}")
         return None

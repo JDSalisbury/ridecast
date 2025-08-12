@@ -1,17 +1,19 @@
 # ridecast.py
 
 import json
-from ast import literal_eval
 from datetime import datetime, timezone
+from typing import Dict, List, Tuple, Any
 from fetchers.openweather import OpenWeather
 from fetchers.weatherapi import WeatherAPI
 from fetchers.tomorrowio import TomorrowIO
 from fetchers.noaa import NOAA
-from utils import ForecastResult, temp_to_fahrenheit, military_to_standard, kph_to_mph
+from models import ForecastResult, temp_to_fahrenheit, military_to_standard, kph_to_mph
 from pathlib import Path
-from evaluator import evaluate_ride, evaluate_ride_full_day, evaluate_ride_full_day2
-
+from evaluator import evaluate_ride, evaluate_ride_full_day2
 from emailer import send_email
+from logger import logger
+from validation import validate_startup_requirements
+from email_templates import create_ride_email_html, create_fallback_email_html, create_subject_line
 FETCHERS = [
     OpenWeather(),
     WeatherAPI(),
@@ -20,7 +22,7 @@ FETCHERS = [
 ]
 
 
-def parse_user_data(file_path="users.json"):
+def parse_user_data(file_path: str = "users.json") -> List[Dict[str, Any]]:
     """Load and parse user data from a JSON file."""
     script_dir = Path(__file__).resolve().parent
     file_path = script_dir / file_path
@@ -30,40 +32,49 @@ def parse_user_data(file_path="users.json"):
 
     parsed_users = []
     for user in raw_data["users"]:
+        # Parse tuple strings like "(7,9)" into actual tuples
+        ride_in_hours = tuple(map(int, user["RIDE_IN_HOURS"].strip("()").split(",")))
+        ride_back_hours = tuple(map(int, user["RIDE_BACK_HOURS"].strip("()").split(",")))
+        
+        # Parse location coordinate strings like "(39.949, -82.937)" into tuples
+        locations = {}
+        for location_name, coord_str in user["LOCATIONS"].items():
+            coords = tuple(map(float, coord_str.strip("()").split(",")))
+            locations[location_name] = coords
+
         parsed_user = {
             "id": user["id"],
             "name": user["NAME"],
             "email": user["EMAIL"],
-            "ride_in_hours": literal_eval(user["RIDE_IN_HOURS"]),
-            "ride_back_hours": literal_eval(user["RIDE_BACK_HOURS"]),
-            "locations": {k: literal_eval(v) for k, v in user["LOCATIONS"].items()},
-
+            "ride_in_hours": ride_in_hours,
+            "ride_back_hours": ride_back_hours,
+            "locations": locations,
         }
         parsed_users.append(parsed_user)
 
     return parsed_users
 
 
-def get_all_forecasts(locations: dict, hour_range: tuple) -> list[tuple[str, ForecastResult]]:
+def get_all_forecasts(locations: Dict[str, Tuple[float, float]], hour_range: Tuple[int, int]) -> List[Tuple[str, ForecastResult]]:
     """Run all fetchers for each location during the specified hour range."""
     results = []
     for loc_name, (lat, lon) in locations.items():
         for fetcher in FETCHERS:
-            print(f"[FETCH] Fetching {loc_name} from {fetcher.source}...")
+            logger.info(f"Fetching {loc_name} from {fetcher.source}...")
             result = fetcher.get_forecast(lat, lon, hour_range)
             if result:
                 results.append((loc_name, result))
     return results
 
 
-def print_summary(user: dict, forecasts: list, label: str) -> str:
+def print_summary(user: Dict[str, Any], forecasts: List[Tuple[str, ForecastResult]], label: str) -> str:
     lines = [f"\n===== RideCast Forecast for {user['name']} ({label}) =====\n"]
     if label == "Morning":
         lines.append(
-            f"Forcast for riding in between {military_to_standard(user['ride_in_hours'][0])}:00 and {military_to_standard(user['ride_in_hours'][1])}:00")
+            f"Forecast for riding in between {military_to_standard(user['ride_in_hours'][0])}:00 and {military_to_standard(user['ride_in_hours'][1])}:00")
     elif label == "Evening":
         lines.append(
-            f"Forcast for riding in between {military_to_standard(user['ride_back_hours'][0])}:00 and {military_to_standard(user['ride_back_hours'][1])}:00")
+            f"Forecast for riding in between {military_to_standard(user['ride_back_hours'][0])}:00 and {military_to_standard(user['ride_back_hours'][1])}:00")
 
     for loc_name, result in forecasts:
         rain_status = "🌧️ RAIN" if result.rain else "☀️ Clear"
@@ -73,25 +84,31 @@ def print_summary(user: dict, forecasts: list, label: str) -> str:
 
     chat_evaluation = evaluate_ride(forecasts, label, user)
     lines.append(f"\nChatGPT Evaluation:\n{chat_evaluation}\n")
-    print("\n".join(lines))
+    logger.info("\n".join(lines))
     return "\n".join(lines)
 
 
-def is_weekend():
+def is_weekend() -> bool:
     current_utc_time = datetime.now(timezone.utc)
     return current_utc_time.weekday() >= 5
 
 
 if __name__ == "__main__":
-    print("=== Starting RideCast ===")
+    logger.info("=== Starting RideCast ===")
+    
+    # Validate startup requirements
+    if not validate_startup_requirements():
+        logger.error("Startup validation failed. Exiting.")
+        exit(1)
+    
     if is_weekend():
-        print("RideCast is not available on weekends. Exiting.")
+        logger.info("RideCast is not available on weekends. Exiting.")
         exit(0)
 
     users = parse_user_data()
 
     for user in users:
-        print(f"\n=== Running RideCast for {user['name']} ===")
+        logger.info(f"=== Running RideCast for {user['name']} ===")
 
         full_report = []
 
@@ -111,22 +128,39 @@ if __name__ == "__main__":
 
         chat_evaluation = evaluate_ride_full_day2(full_report, user)
 
-        # Parse the JSON response
+        # Parse the JSON response and send email
+        logger.info(f"Sending RideCast to {user['email']}...")
+        
         try:
-            print(f"[EMAIL] Sending RideCast to {user['email']}...")
             eval_data = json.loads(chat_evaluation)
-            ride_emoji = "✅" if eval_data.get("should_ride", False) else "❌"
+            
+            # Extract data with proper defaults
+            should_ride = eval_data.get("should_ride", False)
             temp = eval_data.get("temp", "N/A")
-
-            # Email subject with ride recommendation and weather
-            subject = f"🏍️ {ride_emoji} RideCast for {user['name'].split()[0]} - {temp}°F"
-
-            # Email body with summary and fun fact
-            email_body = f"{eval_data.get('summary', '')}\n\n🏍️ Fun Fact: {eval_data.get('fun_fact', '')}"
-
-            send_email(user["email"], subject, email_body)
-        except json.JSONDecodeError:
-
-            # Fallback to original behavior if JSON parsing fails
-            subject = f"🏍️ RideCast Forecast for {user['name'].split()[0]}"
-            send_email(user["email"], subject, chat_evaluation)
+            summary = eval_data.get("summary", "Weather forecast data available")
+            fun_fact = eval_data.get("fun_fact", "Always wear proper protective gear when riding!")
+            
+            user_first_name = user['name'].split()[0]
+            
+            # Create formatted email
+            subject = create_subject_line(should_ride, user_first_name, temp)
+            html_body = create_ride_email_html(summary, fun_fact, user_first_name)
+            
+            send_email(user["email"], subject, html_body)
+            logger.info(f"Successfully sent formatted RideCast to {user['name']}")
+            
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse JSON response from evaluator: {e}")
+            logger.info("Using fallback email format")
+            
+            # Fallback to original behavior with better formatting
+            user_first_name = user['name'].split()[0]
+            subject = f"🏍️ RideCast Forecast for {user_first_name}"
+            html_body = create_fallback_email_html(chat_evaluation, user_first_name)
+            
+            send_email(user["email"], subject, html_body)
+            logger.info(f"Successfully sent fallback RideCast to {user['name']}")
+            
+        except Exception as e:
+            logger.error(f"Unexpected error processing email for {user['name']}: {e}")
+            continue
