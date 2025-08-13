@@ -46,6 +46,7 @@ def parse_user_data(file_path: str = "users.json") -> List[Dict[str, Any]]:
             "id": user["id"],
             "name": user["NAME"],
             "email": user["EMAIL"],
+            "enabled": user.get("ENABLED", True),
             "ride_in_hours": ride_in_hours,
             "ride_back_hours": ride_back_hours,
             "locations": locations,
@@ -153,6 +154,10 @@ if __name__ == "__main__":
     users = parse_user_data()
 
     for user in users:
+        if not user.get('enabled', True):
+            logger.info(f"Skipping {user['name']} - user is disabled")
+            continue
+            
         logger.info(f"=== Running RideCast for {user['name']} ===")
 
         full_report = []

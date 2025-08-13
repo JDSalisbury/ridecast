@@ -4,23 +4,77 @@
             "id": 1,
             "NAME": "Jeff Salisbury",
             "EMAIL": "salisbury.jeffery@gmail.com",
+            "ENABLED": true,
+            "TIMEZONE": "America/New_York",
             "RIDE_IN_HOURS": "(7,9)",
             "RIDE_BACK_HOURS": "(13,15)",
             "LOCATIONS": {
                 "Home": "(39.94954786783218, -82.93728710268415)",
                 "Work": "(40.14374280043774, -82.99466818733278)"
-            }
+            },
+            "WEATHER_PREFERENCES": {
+                "max_rain_chance": 30,
+                "min_temp_f": 45,
+                "max_wind_mph": 25,
+                "preferred_conditions": [
+                    "clear",
+                    "cloudy",
+                    "light_rain"
+                ]
+            },
+            "NOTIFICATION_SETTINGS": {
+                "send_morning_only": false,
+                "send_if_no_ride": true,
+                "advance_notice_hours": 1
+            },
+            "VEHICLE_TYPE": "motorcycle",
+            "COMMUTE_DAYS": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday"
+            ],
+            "BACKUP_EMAIL": null,
+            "DISPLAY_NAME": "Jeff"
         },
         {
             "id": 2,
             "NAME": "Eythan Kramm",
             "EMAIL": "eythan@eythankramm.com",
+            "ENABLED": true,
+            "TIMEZONE": "America/New_York",
             "RIDE_IN_HOURS": "(7,10)",
             "RIDE_BACK_HOURS": "(15,17)",
             "LOCATIONS": {
                 "Home": "(40.06199815239217, -83.05161334570175)",
                 "Work": "(40.14374280043774, -82.99466818733278)"
-            }
+            },
+            "WEATHER_PREFERENCES": {
+                "max_rain_chance": 40,
+                "min_temp_f": 50,
+                "max_wind_mph": 30,
+                "preferred_conditions": [
+                    "clear",
+                    "cloudy",
+                    "light_rain"
+                ]
+            },
+            "NOTIFICATION_SETTINGS": {
+                "send_morning_only": false,
+                "send_if_no_ride": true,
+                "advance_notice_hours": 1
+            },
+            "VEHICLE_TYPE": "motorcycle",
+            "COMMUTE_DAYS": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday"
+            ],
+            "BACKUP_EMAIL": null,
+            "DISPLAY_NAME": "Eythan"
         }
     ]
 }
