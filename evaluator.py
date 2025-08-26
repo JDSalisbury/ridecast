@@ -3,7 +3,7 @@ from typing import List, Tuple, Dict, Any
 from models import ForecastResult, temp_to_fahrenheit, military_to_standard
 from openai import OpenAI
 from config import OPEN_API_KEY
-from logger import logger
+from logger import logger, load_fun_facts
 import re
 
 client = OpenAI(api_key=OPEN_API_KEY)
@@ -300,6 +300,7 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         "Focus on specific weather factors: rain percentage, wind speed, temperature, and timing."
     )
 
+    fun_facts = load_fun_facts(rider['name'])
     prompt = (
         f"MOTORCYCLE COMMUTER WEATHER ANALYSIS\n"
         f"======================================\n\n"
@@ -310,6 +311,8 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f"• Route: {' ↔ '.join(rider['locations'].keys())}\n\n"
         f"WEATHER CONDITIONS:\n"
         f"{' '.join(full_report)}\n\n"
+        f"ANALYSIS RESULTS:\n"
+        f"{' '.join(weather_analysis)}\n\n"
         f"ANALYSIS REQUIREMENTS:\n"
         f"• Both morning AND evening must be acceptable for RIDE recommendation\n"
         f"• Evening conditions are weighted more heavily (tired rider, rush hour, darkness)\n"
@@ -319,14 +322,14 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f"Keep the summary concise minimally verbose explanation of the decision and actionable, but also chill and friendly, and cool. and fun. the summary is for an email."
         f"RESPONSE FORMAT - JSON only (no additional text):\n"
         f'{{\n'
-        f'  "temp": "<Average temperature in Fahrenheit>",\n'
+        f'  "temp": "<Average temperature in Fahrenheit number only do not add F>",\n'
         f'  "should_ride": true or false,\n'
         f'  "risk_level": "<minimal/low/moderate/high/extreme>",\n'
-        f'  "summary": "<Clear recommendation with specific reasoning about both commutes. Mention commitment factor if relevant>",\n'
+        f'  "summary": "<Clear recommendation with specific reasoning about both commutes and weather analysis. Mention commitment factor if relevant>",\n'
         f'  "primary_concern": "<Main weather factor influencing decision>",\n'
         f'  "gear_recommendation": "<Specific gear advice if recommending ride>",\n'
         f'  "alternative_timing": "<Suggest better timing if conditions might improve>",\n'
-        f'  "fun_fact": "<Motorcycle fact or riding tip/insight, or a motorcycle quote, do mention who said it. This is also a section to where you can have fun with it. and keep it fresh>"\n'
+        f'  "fun_fact": "<Motorcycle fact or riding tip/insight, or a motorcycle quote, do mention who said it. This is also a section to where you can have fun with it. and keep it fresh do not use any of the fun facts from the file {fun_facts}>"\n'
         f'}}'
     )
 
