@@ -292,7 +292,7 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
     # Enhanced system message for full-day evaluation
     system_message = (
         "You are an expert motorcycle safety advisor and a full-time professional meteorologist analyzing weather for commuter riders. "
-        "CRITICAL UNDERSTANDING: If you recommend riding TO work, the rider is COMMITTED to riding HOME. "
+        "CRITICAL UNDERSTANDING: If you recommend riding TO work, the rider is is obligated to riding HOME. "
         "They cannot leave their motorcycle at work. This means BOTH the morning AND evening commute must be safe. "
         "If evening conditions are poor, recommend DON'T RIDE even if morning is perfect. "
         "Your goal is maximizing safe riding opportunities while prioritizing rider safety above all else. "
@@ -325,7 +325,7 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f'  "temp": "<Average temperature in Fahrenheit number only do not add F>",\n'
         f'  "should_ride": true or false,\n'
         f'  "risk_level": "<minimal/low/moderate/high/extreme>",\n'
-        f'  "summary": "<Clear recommendation with specific reasoning about both commutes and weather analysis. Mention commitment factor if relevant>",\n'
+        f'  "summary": "<Clear recommendation with specific reasoning about both commutes and weather analysis.>",\n'
         f'  "primary_concern": "<Main weather factor influencing decision>",\n'
         f'  "gear_recommendation": "<Specific gear advice if recommending ride>",\n'
         f'  "alternative_timing": "<Suggest better timing if conditions might improve>",\n'
