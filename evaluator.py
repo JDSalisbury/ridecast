@@ -319,7 +319,7 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f"• Consider rain, wind, temperature, and visibility factors\n"
         f"• If evening rain >30%, strongly consider DON'T RIDE\n"
         f"• If either direction has >50% rain, recommend DON'T RIDE\n\n"
-        f"Keep the summary concise minimally verbose explanation of the decision and actionable, but also chill and friendly, and cool. and fun. the summary is for an email."
+        f"Keep the summary concise verbose explanation of the decision. talk about the morning temp and ride in, along with the afternoon temp and ride out, but also chill and friendly, and cool. and fun. the summary is for an email."
         f"RESPONSE FORMAT - JSON only (no additional text):\n"
         f'{{\n'
         f'  "temp": "<Average temperature in Fahrenheit number only do not add F>",\n'
