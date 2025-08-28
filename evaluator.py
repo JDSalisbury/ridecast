@@ -329,7 +329,7 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f'  "primary_concern": "<Main weather factor influencing decision>",\n'
         f'  "gear_recommendation": "<Specific gear advice if recommending ride>",\n'
         f'  "alternative_timing": "<Suggest better timing if conditions might improve>",\n'
-        f'  "fun_fact": "<Motorcycle fact or riding tip/insight, or a motorcycle quote, do mention who said it. This is also a section to where you can have fun with it. and keep it fresh do not use any of the fun facts from the file {fun_facts}>"\n'
+        f'  "fun_fact": "<Motorcycle fact or riding tip/insight, or a motorcycle quote, do mention who said it. This is also a section to where you can have fun with it. and keep it fresh do not use any of the following messages already used, here is a list of used messages here: {fun_facts}>"\n'
         f'}}'
     )
 
