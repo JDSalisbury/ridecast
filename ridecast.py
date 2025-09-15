@@ -9,7 +9,7 @@ from fetchers.tomorrowio import TomorrowIO
 from fetchers.noaa import NOAA
 from models import ForecastResult, temp_to_fahrenheit, military_to_standard, kph_to_mph
 from pathlib import Path
-from evaluator import evaluate_ride, evaluate_ride_full_day2
+from evaluator import evaluate_ride_full_day2
 from emailer import send_email
 from logger import logger, log_fun_fact
 from validation import validate_startup_requirements
@@ -130,8 +130,7 @@ def print_summary(user: Dict[str, Any], forecasts: List[Tuple[str, ForecastResul
         logger.info(summary)
         return summary
 
-    chat_evaluation = evaluate_ride(forecasts, label, user)
-    lines.append(f"\n🤖 AI Evaluation:\n{chat_evaluation}\n")
+    # Individual period evaluation removed - using full day evaluation only
 
     summary = "\n".join(lines)
     logger.info(summary)

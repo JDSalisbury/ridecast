@@ -142,7 +142,7 @@ def call_openai(prompt: str, system_message: str = None) -> str:
 
     try:
         # Check if this is a JSON-only request by looking for JSON format in the prompt
-        is_json_request = "RESPONSE FORMAT" in prompt and "JSON" in prompt
+        is_json_request = ("RESPONSE FORMAT" in prompt or "MANDATORY RESPONSE FORMAT" in prompt) and "JSON" in prompt
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",  # Using GPT-3.5-turbo for compatibility
