@@ -141,13 +141,18 @@ def call_openai(prompt: str, system_message: str = None) -> str:
     )
 
     try:
+        # Check if this is a JSON-only request by looking for JSON format in the prompt
+        is_json_request = "RESPONSE FORMAT" in prompt and "JSON" in prompt
+
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",  # Using GPT-3.5-turbo for compatibility
             messages=[
                 {"role": "system", "content": system_message or default_system},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3)  # Lower temperature for more consistent safety advice
+            temperature=0.3,  # Lower temperature for more consistent safety advice
+            response_format={"type": "json_object"} if is_json_request else None
+        )
         return response.choices[0].message.content.strip()
     except Exception as e:
         logger.error(f"OpenAI API error: {e}")
@@ -297,7 +302,8 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         "If evening conditions are poor, recommend DON'T RIDE even if morning is perfect. "
         "Your goal is maximizing safe riding opportunities while prioritizing rider safety above all else. "
         "Be encouraging when conditions are truly safe, but conservative when there's meaningful risk. "
-        "Focus on specific weather factors: rain percentage, wind speed, temperature, and timing."
+        "Focus on specific weather factors: rain percentage, wind speed, temperature, and timing. "
+        "CRITICAL: You MUST respond ONLY with valid JSON. No explanatory text, no markdown, no formatting - ONLY the JSON object."
     )
 
     fun_facts_summary = load_fun_facts(rider['name'])
@@ -339,7 +345,7 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f"• Avoid repeating themes or personalities mentioned in the recent usage summary\n"
         f"• Be creative and diverse - explore different aspects of motorcycling\n"
         f"• Keep it engaging and relevant to motorcycle enthusiasts\n\n"
-        f"RESPONSE FORMAT - JSON only (no additional text):\n"
+        f"MANDATORY RESPONSE FORMAT - ONLY valid JSON (absolutely no additional text, explanations, or formatting):\n"
         f'{{\n'
         f'  "temp": "<Average temperature in Fahrenheit number only do not add F>",\n'
         f'  "should_ride": true or false,\n'
