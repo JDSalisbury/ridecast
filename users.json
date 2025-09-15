@@ -75,6 +75,44 @@
             ],
             "BACKUP_EMAIL": null,
             "DISPLAY_NAME": "Eythan"
+        },
+        {
+            "id": 3,
+            "NAME": "Adam Bundschuh",
+            "EMAIL": "bundschuh.adam@gmail.com",
+            "ENABLED": true,
+            "TIMEZONE": "America/New_York",
+            "RIDE_IN_HOURS": "(6,7)",
+            "RIDE_BACK_HOURS": "(13,15)",
+            "LOCATIONS": {
+                "Home": "(39.959033734462594, -83.01289532293423)",
+                "Work": "(40.14374280043774, -82.99466818733278)"
+            },
+            "WEATHER_PREFERENCES": {
+                "max_rain_chance": 40,
+                "min_temp_f": 50,
+                "max_wind_mph": 30,
+                "preferred_conditions": [
+                    "clear",
+                    "cloudy",
+                    "light_rain"
+                ]
+            },
+            "NOTIFICATION_SETTINGS": {
+                "send_morning_only": false,
+                "send_if_no_ride": true,
+                "advance_notice_hours": 1
+            },
+            "VEHICLE_TYPE": "motorcycle",
+            "COMMUTE_DAYS": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday"
+            ],
+            "BACKUP_EMAIL": null,
+            "DISPLAY_NAME": "Adam"
         }
     ]
 }
