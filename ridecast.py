@@ -196,7 +196,11 @@ if __name__ == "__main__":
             fun_fact = eval_data.get(
                 "fun_fact", "Always wear proper protective gear when riding!")
 
-            log_fun_fact(fun_fact, user['name'])
+            # Extract category from the suggested category in evaluator (if we want to get fancy)
+            # For now, use general category, but the system can auto-suggest better ones
+            success = log_fun_fact(fun_fact, user['name'], "general")
+            if not success:
+                logger.warning(f"Duplicate fun fact detected for {user['name']} - this shouldn't happen with new system")
             user_first_name = user['name'].split()[0]
 
             # Create formatted email

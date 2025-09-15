@@ -1,27 +1,49 @@
 import logging
 import sys
 from pathlib import Path
+from fun_facts_db import FunFactsDB
 
 
-def log_fun_fact(fun_fact: str, user_name: str) -> None:
-    """save fun fact to text file."""
-    script_dir = Path(__file__).resolve().parent
-    file_path = script_dir / "fun_facts.txt"
-
-    with open(file_path, "a") as f:
-        f.write(f"Fun Fact for {user_name}: {fun_fact}\n")
+# Global fun facts database instance
+_fun_facts_db = None
 
 
-def load_fun_facts(user) -> list[str]:
-    """Load fun facts from text file."""
-    script_dir = Path(__file__).resolve().parent
-    file_path = script_dir / "fun_facts.txt"
+def get_fun_facts_db() -> FunFactsDB:
+    """Get singleton instance of fun facts database."""
+    global _fun_facts_db
+    if _fun_facts_db is None:
+        _fun_facts_db = FunFactsDB()
+    return _fun_facts_db
 
-    if not file_path.exists():
-        return []
 
-    with open(file_path, "r") as f:
-        return [line for line in f.readlines() if user in line]
+def log_fun_fact(fun_fact: str, user_name: str, category: str = "general") -> bool:
+    """Save fun fact to database. Returns True if added, False if duplicate."""
+    db = get_fun_facts_db()
+    return db.add_fun_fact(fun_fact, user_name, category)
+
+
+def load_fun_facts(user_name: str) -> str:
+    """Load fun facts summary for context (not full facts to avoid repetition)."""
+    db = get_fun_facts_db()
+    return db.get_recent_facts_summary(user_name)
+
+
+def get_suggested_category(user_name: str) -> str:
+    """Get a suggested category that hasn't been used recently."""
+    db = get_fun_facts_db()
+    return db.get_unused_category(user_name)
+
+
+def cleanup_old_fun_facts(days_to_keep: int = 90) -> int:
+    """Clean up old fun facts. Returns count of removed facts."""
+    db = get_fun_facts_db()
+    return db.cleanup_old_facts(days_to_keep)
+
+
+def get_fun_facts_stats(user_name: str) -> dict:
+    """Get statistics about user's fun facts."""
+    db = get_fun_facts_db()
+    return db.get_stats(user_name)
 
 
 def setup_logger(name: str = "ridecast", log_level: str = "INFO") -> logging.Logger:

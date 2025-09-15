@@ -3,7 +3,7 @@ from typing import List, Tuple, Dict, Any
 from models import ForecastResult, temp_to_fahrenheit, military_to_standard
 from openai import OpenAI
 from config import OPEN_API_KEY
-from logger import logger, load_fun_facts
+from logger import logger, load_fun_facts, get_suggested_category
 import re
 
 client = OpenAI(api_key=OPEN_API_KEY)
@@ -300,7 +300,19 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         "Focus on specific weather factors: rain percentage, wind speed, temperature, and timing."
     )
 
-    fun_facts = load_fun_facts(rider['name'])
+    fun_facts_summary = load_fun_facts(rider['name'])
+    suggested_category = get_suggested_category(rider['name'])
+    
+    # Define category guidelines
+    category_guidelines = {
+        "quotes": "inspiring quotes from famous motorcyclists, racers, or enthusiasts",
+        "safety_tips": "practical safety advice and riding tips",
+        "motorcycle_history": "interesting historical facts about motorcycles or manufacturers", 
+        "technical_facts": "technical information about motorcycle mechanics or engineering",
+        "riding_tips": "practical advice for better riding skills or techniques",
+        "inspiration": "motivational thoughts about the joy and freedom of motorcycling"
+    }
+    
     prompt = (
         f"MOTORCYCLE COMMUTER WEATHER ANALYSIS\n"
         f"======================================\n\n"
@@ -319,7 +331,14 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f"• Consider rain, wind, temperature, and visibility factors\n"
         f"• If evening rain >30%, strongly consider DON'T RIDE\n"
         f"• If either direction has >50% rain, recommend DON'T RIDE\n\n"
-        f"Keep the summary concise verbose explanation of the decision. talk about the morning temp and ride in, along with the afternoon temp and ride out, but also chill and friendly, and cool. and fun. the summary is for an email."
+        f"Keep the summary concise verbose explanation of the decision. talk about the morning temp and ride in, along with the afternoon temp and ride out, but also chill and friendly, and cool. and fun. the summary is for an email.\n\n"
+        f"FUN FACT GENERATION REQUIREMENTS:\n"
+        f"• Focus on creating FRESH, UNIQUE content in the '{suggested_category}' category\n"
+        f"• Category guideline: {category_guidelines.get(suggested_category, 'general motorcycle content')}\n"
+        f"• Recent usage summary: {fun_facts_summary}\n"
+        f"• Avoid repeating themes or personalities mentioned in the recent usage summary\n"
+        f"• Be creative and diverse - explore different aspects of motorcycling\n"
+        f"• Keep it engaging and relevant to motorcycle enthusiasts\n\n"
         f"RESPONSE FORMAT - JSON only (no additional text):\n"
         f'{{\n'
         f'  "temp": "<Average temperature in Fahrenheit number only do not add F>",\n'
@@ -329,7 +348,7 @@ def evaluate_ride_full_day2(full_report: List[str], rider: Dict[str, Any]) -> st
         f'  "primary_concern": "<Main weather factor influencing decision>",\n'
         f'  "gear_recommendation": "<Specific gear advice if recommending ride>",\n'
         f'  "alternative_timing": "<Suggest better timing if conditions might improve>",\n'
-        f'  "fun_fact": "<Motorcycle fact or riding tip/insight, or a motorcycle quote, do mention who said it. This is also a section to where you can have fun with it. and keep it fresh do not use any of the following messages already used, here is a list of used messages here: {fun_facts}>"\n'
+        f'  "fun_fact": "<Generate a fresh, unique {suggested_category}-focused motorcycle fact/tip/insight that differs from recent usage patterns>"\n'
         f'}}'
     )
 
