@@ -1,0 +1,38 @@
+meta {
+  name: Update User Enabled Status
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{baseUrl}}/users/1/enabled
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "enabled": false
+  }
+}
+
+docs {
+  # Update User Enabled Status
+
+  Update only the enabled status of a user.
+
+  ## Path Parameters:
+  - `user_id`: The unique identifier of the user
+
+  ## Request Body:
+  - `enabled`: Boolean value (true/false) to set the user's enabled status
+
+  ## Notes:
+  - This is a quick way to enable/disable a user without modifying other fields
+  - Useful for temporary account suspension or activation
+}

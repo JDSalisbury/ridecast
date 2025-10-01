@@ -1,0 +1,27 @@
+meta {
+  name: Get User Enabled Status
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/users/1/enabled
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+docs {
+  # Get User Enabled Status
+
+  Get only the enabled status of a specific user.
+
+  ## Path Parameters:
+  - `user_id`: The unique identifier of the user
+
+  ## Response:
+  Returns an object with `user_id` and `enabled` boolean value.
+}

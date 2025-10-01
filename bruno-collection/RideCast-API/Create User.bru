@@ -1,0 +1,69 @@
+meta {
+  name: Create User
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/users
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "NAME": "Test User",
+    "EMAIL": "test@example.com",
+    "ENABLED": true,
+    "TIMEZONE": "America/New_York",
+    "RIDE_IN_HOURS": "(8,10)",
+    "RIDE_BACK_HOURS": "(16,18)",
+    "LOCATIONS": {
+      "Home": "(40.123, -83.456)",
+      "Work": "(40.789, -83.123)"
+    },
+    "WEATHER_PREFERENCES": {
+      "max_rain_chance": 35,
+      "min_temp_f": 50,
+      "max_wind_mph": 30,
+      "preferred_conditions": ["clear", "cloudy"]
+    },
+    "NOTIFICATION_SETTINGS": {
+      "send_morning_only": false,
+      "send_if_no_ride": true,
+      "advance_notice_hours": 2
+    },
+    "VEHICLE_TYPE": "motorcycle",
+    "COMMUTE_DAYS": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "BACKUP_EMAIL": null,
+    "DISPLAY_NAME": "Test"
+  }
+}
+
+docs {
+  # Create User
+
+  Create a new user in the system.
+
+  ## Required Fields:
+  - `NAME`: Full name of the user
+  - `EMAIL`: Valid email address (must be unique)
+  - `RIDE_IN_HOURS`: Riding in hours as tuple string "(start,end)"
+  - `RIDE_BACK_HOURS`: Riding back hours as tuple string "(start,end)"
+  - `LOCATIONS`: Object with location names as keys and coordinate strings as values
+  - `WEATHER_PREFERENCES`: Weather preference settings
+  - `NOTIFICATION_SETTINGS`: Notification preference settings
+  - `DISPLAY_NAME`: Display name for the user
+
+  ## Optional Fields:
+  - `ENABLED`: Whether the user account is enabled (default: true)
+  - `TIMEZONE`: User's timezone (default: "America/New_York")
+  - `VEHICLE_TYPE`: Type of vehicle (default: "motorcycle")
+  - `COMMUTE_DAYS`: Days of the week for commuting (default: Monday-Friday)
+  - `BACKUP_EMAIL`: Backup email address (default: null)
+}

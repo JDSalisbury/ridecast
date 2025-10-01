@@ -1,0 +1,29 @@
+meta {
+  name: Delete User
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/users/999
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+docs {
+  # Delete User
+
+  Delete a user from the system.
+
+  ## Path Parameters:
+  - `user_id`: The unique identifier of the user to delete
+
+  ## Notes:
+  - This permanently removes the user from the system
+  - Returns 404 if the user doesn't exist
+  - Returns success message if deletion is successful
+}

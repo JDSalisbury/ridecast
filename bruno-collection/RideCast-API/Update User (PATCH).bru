@@ -1,0 +1,37 @@
+meta {
+  name: Update User (PATCH)
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/users/1
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "DISPLAY_NAME": "Partially Updated Name",
+    "ENABLED": false
+  }
+}
+
+docs {
+  # Update User (PATCH)
+
+  Partially update a user record with only the fields you want to change.
+
+  ## Path Parameters:
+  - `user_id`: The unique identifier of the user to update
+
+  ## Notes:
+  - Only provide the fields you want to update
+  - Other fields will remain unchanged
+  - All fields are optional for PATCH requests
+}

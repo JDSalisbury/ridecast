@@ -1,0 +1,60 @@
+meta {
+  name: Update User (PUT)
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/users/1
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "NAME": "Updated User Name",
+    "EMAIL": "updated@example.com",
+    "ENABLED": true,
+    "TIMEZONE": "America/New_York",
+    "RIDE_IN_HOURS": "(7,9)",
+    "RIDE_BACK_HOURS": "(15,17)",
+    "LOCATIONS": {
+      "Home": "(39.123, -82.456)",
+      "Work": "(39.789, -82.123)"
+    },
+    "WEATHER_PREFERENCES": {
+      "max_rain_chance": 25,
+      "min_temp_f": 45,
+      "max_wind_mph": 20,
+      "preferred_conditions": ["clear", "partly_cloudy"]
+    },
+    "NOTIFICATION_SETTINGS": {
+      "send_morning_only": true,
+      "send_if_no_ride": false,
+      "advance_notice_hours": 1
+    },
+    "VEHICLE_TYPE": "motorcycle",
+    "COMMUTE_DAYS": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+    "BACKUP_EMAIL": "backup@example.com",
+    "DISPLAY_NAME": "Updated"
+  }
+}
+
+docs {
+  # Update User (PUT)
+
+  Replace an entire user record with new data.
+
+  ## Path Parameters:
+  - `user_id`: The unique identifier of the user to update
+
+  ## Notes:
+  - This replaces the entire user record
+  - All fields should be provided (except ID which is preserved)
+  - Missing optional fields will be set to their defaults
+}

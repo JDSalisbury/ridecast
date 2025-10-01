@@ -1,0 +1,24 @@
+meta {
+  name: Get User by ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/users/1
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+docs {
+  # Get User by ID
+
+  Retrieve a specific user by their ID.
+
+  ## Path Parameters:
+  - `user_id`: The unique identifier of the user (integer)
+}

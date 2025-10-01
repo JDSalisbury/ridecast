@@ -1,0 +1,32 @@
+meta {
+  name: Get All Users
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/users
+  body: none
+  auth: none
+}
+
+params:query {
+  ~enabled: true
+  ~skip: 0
+  ~limit: 100
+}
+
+headers {
+  Accept: application/json
+}
+
+docs {
+  # Get All Users
+
+  Retrieve all users with optional filtering and pagination.
+
+  ## Query Parameters:
+  - `enabled` (optional): Filter by enabled status (true/false)
+  - `skip` (optional): Number of users to skip for pagination (default: 0)
+  - `limit` (optional): Maximum number of users to return (default: 100, max: 1000)
+}
