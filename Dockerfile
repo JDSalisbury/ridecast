@@ -1,15 +1,17 @@
-# Use Python base image
 FROM python:3.11-slim
 
-# Set work directory
 WORKDIR /app
 
-# Install dependencies
+# System deps you might need (optional):
+# RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app code
 COPY . .
 
-# Run uvicorn on port 8080 (Fly expects 8080 by default)
+# Optional, but nice for clarity:
+EXPOSE 8080
+
+# Start FastAPI via Uvicorn on Fly's expected port
 CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8080"]
